@@ -48,3 +48,9 @@ def get_ufw_status():
 
 def get_ufw_status_boolean():
     return System("sudo ufw status").split()[1]
+
+def enable_port(port):
+    System("sudo ufw allow {}".format(port))
+
+def disable_port(port):
+    System("sudo ufw deny {}".format(port))

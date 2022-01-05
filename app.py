@@ -14,7 +14,7 @@ class WelcomeForm(npyscreen.ActionForm):
         self.parentApp.switchForm('UFW_STATUS')
 
 class RemovePort(npyscreen.ActionForm):
-    def create(self) :
+    def create(self):
         database.drop_ports_to_remove()
         database.create_ports_to_remove()
         self.add(npyscreen.TitleText, name="Select all the ports that you would like to remove")
@@ -26,14 +26,21 @@ class RemovePort(npyscreen.ActionForm):
     def on_ok(self):
         for port in database.get_ports_to_remove():
             database.remove_port(port[0])
+            f.disable_port(port[0])
 
         database.drop_ports_to_remove()
         self.parentApp.switchForm('UFW_STATUS')
 
-class ConfirmPortAdded (npyscreen.ActionForm):
+class AddPort(npyscreen.ActionForm):
     def create(self):
-        self.add(npyscreen.TitleText, name="Port added and activated")
+        self.newPort = self.add(npyscreen.TitleText, name="Enter a port number")
+        self.add(npyscreen.Button, name="Add port", value_changed_callback = self.add_port)
     
+    def add_port(self, widget):
+        f.enable_port(self.newPort.value)
+        if self.newPort == '':
+            database.add_new_port("Package", "Host", self.newPort.value, 1)
+
     def on_ok(self):
         self.parentApp.switchForm('UFW_STATUS')
 
@@ -55,39 +62,40 @@ class FirewallStatusForm(npyscreen.ActionForm, npyscreen.FormWithMenus):
             for port in ports:
                 self.add(w.PortChecbox, name="{}".format(port[0])).value = database.is_enabled(port[0])
 
-            self.newPort = self.add(npyscreen.TitleText, name="Add Port: ")
-            self.add(npyscreen.Button, name="Add port", value_changed_callback=self.add_port)
         else:
-            self.add(npyscreen.Button, name="Enable Firewall", value_changed_callback=self.toggle_firewall)
+            self.add(npyscreen.Button, name="Enable Firewall", value_changed_callback=self.enable_firewall)
         
         self.menu = self.new_menu(name="Main Menu")
         self.menu.addItem("Turn firewall on/off", self.toggle_firewall, "t")
+        self.menu.addItem("Add port", self.add_port, "a")
         self.menu.addItem("Remove port", self.remove_port, "r")
 
-    def add_port(self, widget):
-        database.add_new_port("Package", "Host", self.newPort.value, 1)
-        self.parentApp.switchForm('UFW_PORT_CONFIRM')
+    def add_port(self):
+        self.parentApp.switchForm('UFW_ADD_PORT')
 
     def remove_port(self):
         self.parentApp.switchForm('UFW_REMOVE_PORT')
 
-    def toggle_firewall(self, widget):
+    def toggle_firewall(self):
         if self.firewallStatus == 'active':
             f.System("sudo ufw disable")
         else:
             f.System("sudo ufw enable")
 
+    def enable_firewall(self, widget):
+        f.System("sudo ufw enable")
+
     def exit_form(self):
         self.parentApp.switchForm(None)
 
     def on_ok(self):
-        self.parentApp.switchForm('UFW_CONFIG')
+        self.parentApp.switchForm(None)
 
 class App(npyscreen.NPSAppManaged):
     def onStart(self):
         self.addForm('MAIN', WelcomeForm)
         self.addForm('UFW_STATUS', FirewallStatusForm, name="UFW Ports Configuration")
-        self.addForm('UFW_PORT_CONFIRM', ConfirmPortAdded, name="UFW Port Confirmed")
+        self.addForm('UFW_ADD_PORT', AddPort, name="UFW Config: Add Port")
         self.addForm('UFW_REMOVE_PORT', RemovePort, name="UFW Config: Remove Port")
 
 if __name__ == "__main__":

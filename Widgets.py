@@ -10,17 +10,16 @@ database = d.Database()
 class SelectAllPorts(npyscreen.Checkbox):
     def whenToggled(self):
         database.enable_all_ports()
-        a.FirewallStatusForm.display(a.FirewallStatusForm)
 
 class PortChecbox(npyscreen.FormControlCheckbox):
     def whenToggled(self):
         enabled = database.is_enabled(self.name)
         if enabled:
-            f.disable_port(self.name)
-            database.disable_port(self.name)
+            database.add_port_to_disable(self.name)
+            # database.disable_port(self.name)
         else:
-            f.enable_port(self.name)
-            database.enable_port(self.name)
+            database.add_port_to_enable(self.name)
+            # database.enable_port(self.name)
 
 class PortRemove(npyscreen.FormControlCheckbox):
     def whenToggled(self):

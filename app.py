@@ -55,26 +55,37 @@ class FirewallStatusForm(npyscreen.ActionForm, npyscreen.FormWithMenus):
         self.add(npyscreen.FixedText, value="UFW Current Status: {}".format(self.firewallStatus))
         self.nextrely += 1
 
+        self.newPort = self.add(npyscreen.TitleText, name="add:")
+        self.add(npyscreen.Button, name="Add Port", value_changed_callback = self.add_port)
+
+        self.nextrely += 1
+
+        self.ports = []
+
         if self.firewallStatus == 'active':
-            ports = database.get_ports()
-            self.add(w.SelectAllPorts, name="Select All")
+            for port in database.get_ports():
+                self.ports.append(port[0])
 
-            for port in ports:
-                self.add(w.PortChecbox, name="{}".format(port[0])).value = database.is_enabled(port[0])
-
+            self.result = self.add(npyscreen.MultiSelect, values=self.ports)   
         else:
             self.add(npyscreen.Button, name="Enable Firewall", value_changed_callback=self.enable_firewall)
         
         self.menu = self.new_menu(name="Main Menu")
         self.menu.addItem("Turn firewall on/off", self.toggle_firewall, "t")
         self.menu.addItem("Add port", self.add_port, "a")
-        self.menu.addItem("Remove port", self.remove_port, "r")
+        # self.menu.addItem("Remove port", self.remove_port, "r")
 
-    def add_port(self):
-        self.parentApp.switchForm('UFW_ADD_PORT')
+    def add_port(self, widget):
+        f.enable_port(self.newPort.value)
+        try:
+            database.add_new_port("Package", "Host", self.newPort.value, 1)
+            self.ports.append(self.newPort.value)
+            self.newPort.value = ""
+        except:
+            pass
 
-    def remove_port(self):
-        self.parentApp.switchForm('UFW_REMOVE_PORT')
+    # def remove_port(self):
+    #     self.parentApp.switchForm('UFW_REMOVE_PORT')
 
     def toggle_firewall(self):
         if self.firewallStatus == 'active':
@@ -89,6 +100,16 @@ class FirewallStatusForm(npyscreen.ActionForm, npyscreen.FormWithMenus):
         self.parentApp.switchForm(None)
 
     def on_ok(self):
+        for port in database.get_ports_to_enable():
+            database.enable_port(port[0])
+            f.enable_port(port[0])
+
+        for port in database.get_ports_to_disable():
+            database.disable_port(port[0])
+            f.disable_port(port[0])
+
+        database.drop_ports_to_enable()
+        database.drop_ports_to_disable()
         self.parentApp.switchForm(None)
 
 class App(npyscreen.NPSAppManaged):

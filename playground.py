@@ -43,10 +43,5 @@ def get_open_ports():
 
     return Status
 
-def get_ufw_status_boolean():
-    if System("sudo ufw status") == str('active'):
-        return True
-    else:
-        return False
 
-print(get_ufw_status_boolean())
+print(get_open_ports())

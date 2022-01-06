@@ -105,6 +105,55 @@ class Database:
         self.cursor.execute("SELECT * FROM ports_to_remove")
         records = self.cursor.fetchall()
         return list(records)
+
+    # Check that the table doesn't already exist
+    def drop_ports_to_enable(self):
+        self.cursor.execute('DROP TABLE IF EXISTS ports_to_enable;')
+        self.connection.commit()
+
+    # Create the table containing all the firwall configurations
+    def create_ports_to_enable(self):
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS ports_to_enable(
+            port INT
+            );
+            ''')
+        
+        self.connection.commit()
+
+    def add_port_to_enable(self, port):
+        self.cursor.execute("INSERT INTO ports_to_enable (port) VALUES ({})".format(port))
+        self.connection.commit()
+    
+    def get_ports_to_enable(self):
+        self.cursor.execute("SELECT * FROM ports_to_enable")
+        records = self.cursor.fetchall()
+        return list(records)
+
+    # Check that the table doesn't already exist
+    def drop_ports_to_disable(self):
+        self.cursor.execute('DROP TABLE IF EXISTS ports_to_disable;')
+        self.connection.commit()
+
+    # Create the table containing all the firwall configurations
+    def create_ports_to_disable(self):
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS ports_to_disable(
+            port INT
+            );
+            ''')
+        
+        self.connection.commit()
+
+    def add_port_to_disable(self, port):
+        self.cursor.execute("INSERT INTO ports_to_disable (port) VALUES ({})".format(port))
+        self.connection.commit()
+    
+    def get_ports_to_disable(self):
+        self.cursor.execute("SELECT * FROM ports_to_disable")
+        records = self.cursor.fetchall()
+        return list(records)
+        
                         
     
         

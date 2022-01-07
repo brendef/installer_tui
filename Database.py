@@ -69,7 +69,6 @@ class Database:
         self.connection.commit()
 
     def enable_port(self, name):
-        print(name)
         self.cursor.execute("UPDATE firewall_config SET enabled = 1 WHERE port={}".format(name))
         self.connection.commit()
     

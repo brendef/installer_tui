@@ -43,5 +43,15 @@ def get_open_ports():
 
     return Status
 
+def get_ufw_status():
+    return System("sudo ufw status").split()[1]
 
-print(get_open_ports())
+firewallStatus = get_ufw_status()
+def boolean_firewall(status):
+    
+    if status == 'active':
+        return True
+    else:
+        return False
+
+print(boolean_firewall(firewallStatus))

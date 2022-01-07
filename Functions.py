@@ -43,6 +43,18 @@ def get_open_ports():
 
     return Status
 
+def boolean_firewall(firewallStatus):
+    if firewallStatus == 'active':
+        return True
+    else:
+        return False
+    
+def enable_firewall():
+        System("sudo ufw enable")
+
+def disable_firewall():
+        System("sudo ufw disable")
+
 def get_ufw_status():
     return System("sudo ufw status").split()[1]
 
@@ -54,3 +66,15 @@ def enable_port(port):
 
 def disable_port(port):
     System("sudo ufw deny {}".format(port))
+
+def is_ufw_enabled():
+    if System("sudo ufw status").split()[1] == 'active':
+        return True
+    else:
+        return False
+
+def is_ufw_disabled():
+    if System("sudo ufw status").split()[1] == 'inactive':
+        return True
+    else:
+        return False

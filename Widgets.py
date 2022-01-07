@@ -21,11 +21,7 @@ class PortChecbox(npyscreen.FormControlCheckbox):
             database.add_port_to_enable(self.name)
             # database.enable_port(self.name)
 
-class PortRemove(npyscreen.FormControlCheckbox):
-    def whenToggled(self):
-        if self.value:
-            database.add_port_to_remove(self.name)
-
+    
         
         
 

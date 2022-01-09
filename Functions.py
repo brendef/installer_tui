@@ -19,6 +19,8 @@ def System(Command):
 
     return str(Output)
 
+# Firewall functions
+
 def get_open_ports():
     Status = dict()
     Sl = System("sudo ufw status")[104:].split("\n")
@@ -78,3 +80,10 @@ def is_ufw_disabled():
         return True
     else:
         return False
+
+# Package install functions
+def pip_install(Package):  
+	# System("pip install --upgrade "+Package)
+	# System("pip show "+Package)
+	System("pip3 install --upgrade "+Package)
+	System("pip3 show "+Package)

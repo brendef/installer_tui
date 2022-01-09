@@ -56,7 +56,7 @@ class Database:
         self.cursor.execute("UPDATE firewall_config SET enabled = 0 WHERE enabled = 1")
         self.connection.commit()
 
-    def is_database_empty(self):
+    def is_firewall_config_empty(self):
         self.cursor.execute("SELECT * FROM firewall_config")
         records = self.cursor.fetchall()
         if (len(records) == 0):
@@ -153,6 +153,47 @@ class Database:
         records = self.cursor.fetchall()
         return list(records)
         
+    # Packages
+    # ---------------------
+
+    cursor.execute('DROP TABLE IF EXISTS pip_list;')
+
+    cursor.execute('''
+            CREATE TABLE IF NOT EXISTS pip_list(
+            host CHAR(50),
+            package CHAR(50),
+            library CHAR(100),
+            enabled BOOLEAN
+            );
+            ''')
+                        
+    connection.commit()
+
+    def is_pip_list_empty(self):
+        self.cursor.execute("SELECT * FROM pip_list")
+        records = self.cursor.fetchall()
+        if (len(records) == 0):
+            return True
+        else:
+            return False
+
+    def insert_pip_list(self, host, package, library, enabled):
+        self.cursor.execute('''
+          INSERT INTO pip_list (host, package, library, enabled)
+                VALUES
+                ('{}','{}','{}',{})
+          '''.format(host, package, library, enabled))
+     
+        self.connection.commit()
+    
+    def get_libraries(self):
+        self.cursor.execute("SELECT library FROM pip_list")
+        records = self.cursor.fetchall()
+        return records
+    
+    def add_new_library(self, host, package, library, status):
+        self.cursor.execute("INSERT INTO pip_list (host, package, library, enabled) VALUES ('{}','{}','{}',{})".format(host, package, library, status))
+        self.connection.commit()
                         
     
         

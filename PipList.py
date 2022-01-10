@@ -42,7 +42,7 @@
 
 PipList = [
 	"Pandas",
-	"click",
-	"sqlescapy",
-	"wstools"
+	# "click",
+	# "sqlescapy",
+	# "wstools"
 ]

@@ -81,9 +81,9 @@ def is_ufw_disabled():
     else:
         return False
 
-# Package install functions
+# PIP Package install functions
 def pip_install(Package):  
-	# System("pip install --upgrade "+Package)
-	# System("pip show "+Package)
+	System("pip install --upgrade "+Package)
+	System("pip show "+Package)
 	System("pip3 install --upgrade "+Package)
 	System("pip3 show "+Package)

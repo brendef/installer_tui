@@ -1,4 +1,3 @@
-from os import name
 import npyscreen
 import Functions as f
 import Database as d
@@ -23,7 +22,7 @@ class PackageSelect(npyscreen.ActionForm):
         self.nextrely += 1
 
         self.newLibrary = self.add(npyscreen.TitleText, name="add:")
-        self.add(npyscreen.Button, name="Add Library", value_changed_callback = self.add_library) 
+        self.add(npyscreen.ButtonPress, name="Add Library", when_pressed_function = self.add_library) 
 
         self.libraries = []
 
@@ -33,26 +32,58 @@ class PackageSelect(npyscreen.ActionForm):
         self.result = self.add(npyscreen.MultiLine, values=self.libraries)
     
     def add_library(self, widget):
-        try:
-            database.add_new_library("Package", "Host", self.newLibrary.value, 0)
-            self.libraries.append(self.newLibrary.value)
-            self.newLibrary.value = ""
-        except:
-            pass
+        if self.newLibrary != '':
+            try:
+                database.add_new_library("Package", "Host", self.newLibrary.value, 0)
+                self.libraries.append(self.newLibrary.value)
+                self.newLibrary.value = ""
+            except:
+                pass
 
     def on_ok(self):
         self.parentApp.switchForm('PACKAGE_INSTALL')
 
-class PackageInstall(npyscreen. FormBaseNew):
-    def create(self):
-        self.loadingBar = self.add(npyscreen.Slider)
-        self.installPackages
-        
-    def installPackages(self):
-        for library in database.get_libraries():
-            f.pip_install(library[0])
-            self.loadingBar.value += 25
+class LibraryInstall(npyscreen.ActionForm):
+    OK_BUTTON_TEXT = "--->"
+    CANCEL_BUTTON_TEXT = "<---"
 
+    done = 0
+
+    def create(self):
+        self.install = self.add(npyscreen.ButtonPress, name="Start Installation", when_pressed_function = self.installPackages)
+        self.nextrely += 1
+        self.title = self.add(npyscreen.Textfield, value="", editable=False)
+        self.nextrely += 1
+        self.loadingBar = self.add(npyscreen.Slider, editable=False)
+        self.nextrely += 1
+
+    def installPackages(self):
+        self.install.hidden = True
+        self.title.value = "Starting Installation"
+        self.title.display()
+        self.install.display()
+        totalLibraries = database.get_total_libraries()[0]
+        loadPercentage = (1 / totalLibraries) * 100
+
+        for position, library in enumerate(database.get_libraries()):
+            self.title.value = "Installing {} ({} of {})".format(library[0], position + 1, totalLibraries)
+            f.pip_install(library[0])
+            self.loadingBar.value += int(loadPercentage)
+            self.title.display()
+            self.loadingBar.display()
+        self.done = 1
+        database.install_all_libraries()
+        npyscreen.notify_confirm("Pip3 Packages installed")
+        self.parentApp.switchForm('UFW_TOGGLE') 
+        
+    def on_ok(self):
+        if self.done == 1:
+            self.parentApp.switchForm('UFW_CONFIG') 
+
+    def on_cancel(self):
+        if self.done == 1:
+            self.parentApp.setNextFormPrevious()
+                  
 class NextForm(npyscreen.ActionForm):
     OK_BUTTON_TEXT = "--->"
     CANCEL_BUTTON_TEXT = "<---"
@@ -164,7 +195,7 @@ class App(npyscreen.NPSAppManaged):
     def onStart(self):
         self.addForm('MAIN', PreviousForm)
         self.addForm('PACKAGE_SELECT', PackageSelect, name="Pip Packages/Libraries")
-        self.addForm('PACKAGE_INSTALL', PackageInstall, name="Installing Libraries")
+        self.addForm('PACKAGE_INSTALL', LibraryInstall, name="Installing Libraries")
         self.addForm('UFW_TOGGLE', FirewallToggleForm, name="UFW Enable/Disable")
         self.addForm('UFW_CONFIG', FirewallStatusForm, name="UFW Ports Configuration")
         self.addForm('NEXT', NextForm)

@@ -163,7 +163,7 @@ class Database:
             host CHAR(50),
             package CHAR(50),
             library CHAR(100),
-            enabled BOOLEAN
+            installed BOOLEAN
             );
             ''')
                         
@@ -177,12 +177,12 @@ class Database:
         else:
             return False
 
-    def insert_pip_list(self, host, package, library, enabled):
+    def insert_pip_list(self, host, package, library, installed):
         self.cursor.execute('''
-          INSERT INTO pip_list (host, package, library, enabled)
+          INSERT INTO pip_list (host, package, library, installed)
                 VALUES
                 ('{}','{}','{}',{})
-          '''.format(host, package, library, enabled))
+          '''.format(host, package, library, installed))
      
         self.connection.commit()
     
@@ -192,8 +192,15 @@ class Database:
         return records
     
     def add_new_library(self, host, package, library, status):
-        self.cursor.execute("INSERT INTO pip_list (host, package, library, enabled) VALUES ('{}','{}','{}',{})".format(host, package, library, status))
+        self.cursor.execute("INSERT INTO pip_list (host, package, library, installed) VALUES ('{}','{}','{}',{})".format(host, package, library, status))
         self.connection.commit()
+
+    def get_total_libraries(self):
+        self.cursor.execute("SELECT COUNT(*) FROM pip_list")
+        count = self.cursor.fetchall()
+        return count[0]
                         
-    
+    def install_all_libraries(self):
+        self.cursor.execute("UPDATE pip_list SET installed = 1 WHERE installed=0")
+        self.connection.commit()
         

@@ -204,3 +204,74 @@ class Database:
         self.cursor.execute("UPDATE pip_list SET installed = 1 WHERE installed=0")
         self.connection.commit()
         
+# Apt get
+    cursor.execute('DROP TABLE IF EXISTS apt_list;')
+
+    cursor.execute('''
+            CREATE TABLE IF NOT EXISTS apt_list(
+            host CHAR(50),
+            package CHAR(50),
+            apt_package CHAR(100),
+            installed BOOLEAN
+            );
+            ''')
+                        
+    connection.commit()
+
+    def is_apt_list_empty(self):
+        self.cursor.execute("SELECT * FROM apt_list")
+        records = self.cursor.fetchall()
+        if (len(records) == 0):
+            return True
+        else:
+            return False
+
+    def get_apt_packages(self):
+        self.cursor.execute("SELECT apt_package FROM apt_list")
+        records = self.cursor.fetchall()
+        return records
+    
+    def add_new_apt_package(self, host, package, apt_package, status):
+        self.cursor.execute("INSERT INTO apt_list (host, package, apt_package, installed) VALUES ('{}','{}','{}',{})".format(host, package, apt_package, status))
+        self.connection.commit()
+    
+    def get_total_apt_packages(self):
+        self.cursor.execute("SELECT COUNT(*) FROM apt_list")
+        count = self.cursor.fetchall()
+        return count[0]
+
+    def get_apt_packages(self):
+        self.cursor.execute("SELECT apt_package FROM apt_list")
+        records = self.cursor.fetchall()
+        return records
+
+    def install_all_apt_packages(self):
+        self.cursor.execute("UPDATE apt_list SET installed = 1 WHERE installed=0")
+        self.connection.commit()
+
+    def insert_apt_list(self, host, package, apt_package, installed):
+        self.cursor.execute('''
+          INSERT INTO apt_list (host, package, apt_package, installed)
+                VALUES
+                ('{}','{}','{}',{})
+          '''.format(host, package, apt_package, installed))
+     
+        self.connection.commit()
+
+    # Server Details SSH
+    cursor.execute('DROP TABLE IF EXISTS server_details;')
+
+    cursor.execute('''
+            CREATE TABLE IF NOT EXISTS server_details(
+            host CHAR(50),
+            user CHAR(50),
+            pem_address CHAR(100)
+            );
+            ''')
+                        
+    connection.commit()
+
+    def add_server_details(self, host, user, pem_address):
+        self.cursor.execute("INSERT INTO server_details (host, user, pem_address) VALUES ('{}','{}','{}')".format(host, user, pem_address))
+        self.connection.commit()
+    

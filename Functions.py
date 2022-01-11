@@ -1,7 +1,26 @@
 import shlex
 import subprocess
+import paramiko
 
 def System(Command):
+    Cmds = shlex.split(Command," ")
+
+    Output = "~output~"
+    p = subprocess.Popen(
+        Cmds,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT
+    )
+    Output = p.communicate()
+
+    try:
+        Output = Output[0].decode()
+    except:
+        pass
+
+    return str(Output)
+
+def SystemRemote(Command):
     Cmds = shlex.split(Command," ")
 
     Output = "~output~"
@@ -52,7 +71,7 @@ def boolean_firewall(firewallStatus):
         return False
     
 def enable_firewall():
-        System("sudo ufw enable")
+        System("echo y | sudo ufw enable")
 
 def disable_firewall():
         System("sudo ufw disable")
@@ -83,7 +102,25 @@ def is_ufw_disabled():
 
 # PIP Package install functions
 def pip_install(Package):  
-	System("pip install --upgrade "+Package)
+	System("pip install --upgrade " + Package)
 	System("pip show "+Package)
-	System("pip3 install --upgrade "+Package)
+	System("pip3 install --upgrade " + Package)
 	System("pip3 show "+Package)
+
+# APT Package install functions
+def apt_install(Package):  
+	System("sudo apt-get -y install " + Package)
+
+# SSH
+# def ssh(host, user, pem):
+#     System("sudo ssh -t {} {}@{}".format(pem, user, host))
+
+def ssh(host, user, pem):
+    key = paramiko.RSAKey.from_private_key_file(pem)
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(hostname = host, username = user, pkey = key)
+    return client
+
+def mkdir(filename):
+    System("mkdir {}".format(filename))
